@@ -22,6 +22,7 @@ urlpatterns = [
     path('api/', include('app.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0)),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0)),
+    path('', include('app.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

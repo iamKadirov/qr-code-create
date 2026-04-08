@@ -43,12 +43,15 @@ class Site(models.Model):
                   blank=True,
                   default=''
                 )
+    scan_count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
-        data = self.url_site or self.name
+        super().save(*args, **kwargs)
+
+        data = f"http://iamkadirov.pythonanywhere.com/r/{self.id}/"
 
         qr = qrcode.QRCode(
             error_correction=qrcode.constants.ERROR_CORRECT_H
@@ -56,23 +59,20 @@ class Site(models.Model):
         qr.add_data(data)
         qr.make(fit=True)
 
-        # qr_img = qr.make_image(fill_color="black", back_color="white").convert('RGB')
         fill_color = COLOR_MAP.get(self.logo_type, "black")
 
         qr_img = qr.make_image(
-            fill_color=fill_color, 
+            fill_color=fill_color,
             back_color="white"
         ).convert('RGB')
-        
 
         if self.logo_type and self.logo_type in LOGO_MAP:
-
             logo_file = LOGO_MAP[self.logo_type]
 
             logo_path = os.path.join(
                 settings.MEDIA_ROOT,
-                'logos',   
-                logo_file 
+                'logos',
+                logo_file
             )
 
             if os.path.exists(logo_path):
@@ -95,4 +95,4 @@ class Site(models.Model):
         filename = f'image-{self.name.replace("/", "_")}.png'
         self.image.save(filename, File(buffer), save=False)
 
-        super().save(*args, **kwargs)
+        super().save(update_fields=["image"])
