@@ -166,8 +166,6 @@ class ScanLog(models.Model):
 
     country = models.CharField(max_length=100, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
-
-    is_unique = models.BooleanField(default=False)
-
+    
     def __str__(self):
         return f"{self.site.name} - {self.scanned_at}"

@@ -68,9 +68,6 @@ def redirect_to_site(request, pk):
 
     ip = get_client_ip(request)
 
-    existing = ScanLog.objects.filter(site=site, ip_address=ip).exists()
-    is_unique = not existing
-
     country, city = get_location(ip)
 
     ScanLog.objects.create(
@@ -81,15 +78,12 @@ def redirect_to_site(request, pk):
         browser=browser,
         os=os,
         country=country,
-        city=city,
-        is_unique=is_unique
+        city=city
     )
 
     session_key = f"scanned_{pk}"
     
-    if not request.session.get(session_key):
-        site.scan_count += 1
-        site.save()
-        request.session[session_key] = True
+    site.scan_count += 1
+    site.save()
 
     return redirect(site.url_site)
