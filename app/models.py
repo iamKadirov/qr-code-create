@@ -154,13 +154,20 @@ class Site(models.Model):
 
 class ScanLog(models.Model):
     site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='scans')
+
     scanned_at = models.DateTimeField(auto_now_add=True)
+
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.CharField(null=True, blank=True)
+
     device_type = models.CharField(max_length=50, null=True, blank=True)
     browser = models.CharField(max_length=50, null=True, blank=True)
+    os = models.CharField(max_length=50, null=True, blank=True)
+
     country = models.CharField(max_length=100, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
+
+    is_unique = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.site.name} - {self.scanned_at}"

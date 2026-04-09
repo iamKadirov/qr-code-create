@@ -55,6 +55,8 @@ def redirect_to_site(request, pk):
     user_agent_str = request.META.get('HTTP_USER_AGENT', '')
     user_agent = parse(user_agent_str)
 
+    os = user_agent.os.family if user_agent.os else "Unknown"
+
     if user_agent.is_mobile:
         device_type = "Mobile"
     elif user_agent.is_tablet:
@@ -66,6 +68,9 @@ def redirect_to_site(request, pk):
 
     ip = get_client_ip(request)
 
+    existing = ScanLog.objects.filter(site=site, ip_address=ip).exists()
+    is_unique = not existing
+
     country, city = get_location(ip)
 
     ScanLog.objects.create(
@@ -74,8 +79,10 @@ def redirect_to_site(request, pk):
         user_agent=user_agent_str,
         device_type=device_type,
         browser=browser,
+        os=os,
         country=country,
-        city=city
+        city=city,
+        is_unique=is_unique
     )
 
     session_key = f"scanned_{pk}"
