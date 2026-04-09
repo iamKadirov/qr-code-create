@@ -7,5 +7,4 @@ router.register(r'sites', SiteViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('r/<int:pk>/', redirect_to_site, name='redirect-to-site'),
 ]
