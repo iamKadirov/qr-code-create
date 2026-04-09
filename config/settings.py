@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'app',
     #external apps
     'rest_framework',
+    'rest_framework.authtoken',
     'drf_yasg',
 ]
 
