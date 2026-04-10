@@ -46,14 +46,11 @@ class Site(models.Model):
     name = models.CharField(max_length=255)
     image = models.ImageField(upload_to='media', blank=True, null=True)
     url_site = models.URLField(blank=True, null=True)
-    logo_type = models.CharField(
-                  max_length=20,
-                  choices=LOGO_CHOICES,
-                  blank=True,
-                  default=''
-                )
     style = models.CharField(max_length=20, choices=STYLE_CHOICES, default='square')
     scan_count = models.IntegerField(default=0)
+    color = models.CharField(max_length=7, default="#000000")
+    logo_image = models.ImageField(upload_to='logos/', null=True, blank=True)
+    logo_type = models.CharField(max_length=20, choices=LOGO_CHOICES, blank=True, default='')
 
     def __str__(self):
         return self.name
@@ -81,7 +78,7 @@ class Site(models.Model):
         img = Image.new("RGB", (img_size, img_size), "white")
         draw = ImageDraw.Draw(img)
 
-        fill_color = COLOR_MAP.get(self.logo_type, "black")
+        fill_color = self.color if self.color else "#000000"
 
         for y in range(size):
             for x in range(size):
@@ -166,6 +163,6 @@ class ScanLog(models.Model):
 
     country = models.CharField(max_length=100, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
-    
+
     def __str__(self):
         return f"{self.site.name} - {self.scanned_at}"
