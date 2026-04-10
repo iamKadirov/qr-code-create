@@ -5,7 +5,7 @@ from django.core.validators import URLValidator
 
 class SiteSerializer(serializers.ModelSerializer):
     url_site = serializers.CharField()
-    color = serializers.ImageField(required=False)
+    color = serializers.CharField(required=False)
     logo_image = serializers.ImageField(required=False)
 
     class Meta:
