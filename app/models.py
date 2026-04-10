@@ -116,28 +116,30 @@ class Site(models.Model):
 
         qr_img = img
 
-        if self.logo_type and self.logo_type in LOGO_MAP:
-            logo_file = LOGO_MAP[self.logo_type]
+        logo = None
 
-            logo_path = os.path.join(
-                settings.MEDIA_ROOT,
-                'logos',
-                logo_file
-            )
+        if self.logo_image:
+            try:
+                logo = Image.open(self.logo_image)
+            except:
+                logo = None
 
+        elif self.logo_type and self.logo_type in LOGO_MAP:
+            logo_path = os.path.join(settings.MEDIA_ROOT, 'logos', LOGO_MAP[self.logo_type])
             if os.path.exists(logo_path):
                 logo = Image.open(logo_path)
 
-                qr_w, qr_h = qr_img.size
-                logo_size = qr_w // 4
-                logo = logo.resize((logo_size, logo_size))
+        if logo:
+            qr_w, qr_h = qr_img.size
+            logo_size = qr_w // 4
+            logo = logo.resize((logo_size, logo_size))
 
-                pos = ((qr_w - logo_size) // 2, (qr_h - logo_size) // 2)
+            pos = ((qr_w - logo_size) // 2, (qr_h - logo_size) // 2)
 
-                if logo.mode != 'RGBA':
-                    logo = logo.convert("RGBA")
+            if logo.mode != 'RGBA':
+                logo = logo.convert("RGBA")
 
-                qr_img.paste(logo, pos, mask=logo)
+            qr_img.paste(logo, pos, mask=logo)
 
         buffer = BytesIO()
         qr_img.save(buffer, format='PNG')
