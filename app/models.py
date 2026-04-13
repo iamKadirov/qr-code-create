@@ -74,8 +74,8 @@ class Site(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
-        data = f"http://127.0.0.1:8000/r/{self.id}/"
-        # data = f"http://qrcode.pythonanywhere.com/r/{self.id}/"
+        # data = f"http://127.0.0.1:8000/r/{self.id}/"
+        data = f"http://qrcode.pythonanywhere.com/r/{self.id}/"
 
         qr = qrcode.QRCode(
             error_correction=qrcode.constants.ERROR_CORRECT_H,
