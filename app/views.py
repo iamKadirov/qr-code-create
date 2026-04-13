@@ -87,6 +87,5 @@ def redirect_to_site(request, pk):
     )
 
     Site.objects.filter(pk=site.pk).update(scan_count=F('scan_count') + 1)
-    site.save()
 
     return redirect(site.url_site)

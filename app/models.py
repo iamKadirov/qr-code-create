@@ -104,6 +104,8 @@ class Site(models.Model):
         else:
             self.expire_at = None
 
+        super().save(update_fields=['expire_at'])
+
 
         # data = f"http://127.0.0.1:8000/r/{self.id}/"
         data = f"http://qrcode.pythonanywhere.com/r/{self.id}/"
