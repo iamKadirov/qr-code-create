@@ -11,8 +11,8 @@ class SiteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Site
-        fields = ['id', 'name', 'image', 'url_site', 'logo_type', 'logo_image', 'center_text', 'font_type', 'color', 'style', 'scan_count']
-        read_only_fields = ['image', 'scan_count']
+        fields = ['id', 'name', 'image', 'url_site', 'logo_type', 'logo_image', 'center_text', 'font_type', 'color', 'style', 'scan_count', 'created_at', 'expire_duration', 'expire_at']
+        read_only_fields = ['id', 'image', 'scan_count', 'created_at', 'expire_at']
 
     def validate_url_site(self, value):
         value = value.strip().lower()

@@ -7,6 +7,9 @@ from .serializers import SiteSerializer, ScanLogSerializer
 from django.shortcuts import get_object_or_404, redirect
 from user_agents import parse
 import requests
+from django.http import HttpResponse
+from django.utils import timezone
+from django.db.models import F
 
 class SiteViewSet(ModelViewSet):
   # queryset = Site.objects.all()
@@ -52,6 +55,9 @@ def get_location(ip):
 def redirect_to_site(request, pk):
     site = get_object_or_404(Site, pk=pk)
 
+    if site.expire_at and timezone.now() > site.expire_at:
+        return HttpResponse("This QR code has expired", status=410)
+
     user_agent_str = request.META.get('HTTP_USER_AGENT', '')
     user_agent = parse(user_agent_str)
 
@@ -67,7 +73,6 @@ def redirect_to_site(request, pk):
     browser = user_agent.browser.family if user_agent.browser else "Unknown"
 
     ip = get_client_ip(request)
-
     country, city = get_location(ip)
 
     ScanLog.objects.create(
@@ -81,9 +86,7 @@ def redirect_to_site(request, pk):
         city=city
     )
 
-    session_key = f"scanned_{pk}"
-    
-    site.scan_count += 1
+    Site.objects.filter(pk=site.pk).update(scan_count=F('scan_count') + 1)
     site.save()
 
     return redirect(site.url_site)

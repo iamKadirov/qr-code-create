@@ -6,6 +6,8 @@ from PIL import Image, ImageDraw
 import os
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.utils import timezone
+from datetime import timedelta
 
 LOGO_MAP = {
     "linkedin": "linkedin.png",
@@ -31,6 +33,15 @@ FONT_MAP = {
     "mono": "cour.ttf",
     "fancy": "lobster.ttf",
 }
+DURATION_MAP = {
+    '1m': timedelta(minutes=1),
+    '10m': timedelta(minutes=10),
+    '1h': timedelta(hours=1),
+    '10h': timedelta(hours=10),
+    '1d': timedelta(days=1),
+    '7d': timedelta(days=7),
+    '30d': timedelta(days=30),
+}
 
 class Site(models.Model):
     LOGO_CHOICES = [
@@ -55,6 +66,16 @@ class Site(models.Model):
         ('mono', 'Mono'),
         ('fancy', 'Fancy'),
     ]
+    Duration_choices = [
+        ('1m', '1 Minute'),
+        ('10m', '10 Minutes'),
+        ('1h', '1 Hour'),
+        ('10h', '10 Hours'),
+        ('1d', '1 Day'),
+        ('7d', '7 Days'),
+        ('30d', '30 Days'),
+        ('forever', 'Forever'),
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     session_key = models.CharField(max_length=255, null=True, blank=True)
     name = models.CharField(max_length=255)
@@ -67,12 +88,22 @@ class Site(models.Model):
     logo_type = models.CharField(max_length=20, choices=LOGO_CHOICES, blank=True, default='')
     center_text = models.CharField(max_length=20, blank=True, null=True)
     font_type = models.CharField(max_length=20, choices=FONT_CHOICES, default='arial')
+    created_at = models.DateTimeField(auto_now_add=True)
+    expire_duration = models.CharField(max_length=20, choices=Duration_choices, default='forever')
+    expire_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+        now = timezone.now()
+
+        if self.expire_duration in DURATION_MAP:
+            self.expire_at = now + DURATION_MAP[self.expire_duration]
+        else:
+            self.expire_at = None
+
 
         # data = f"http://127.0.0.1:8000/r/{self.id}/"
         data = f"http://qrcode.pythonanywhere.com/r/{self.id}/"
