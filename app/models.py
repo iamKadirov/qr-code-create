@@ -24,6 +24,13 @@ COLOR_MAP = {
     "instagram": "#E1306C",
     "youtube": "#FF0000",
 }
+FONT_MAP = {
+    "arial": "arial.ttf",
+    "bold": "arialbd.ttf",
+    "script": "pacifico.ttf",
+    "mono": "cour.ttf",
+    "fancy": "lobster.ttf",
+}
 
 class Site(models.Model):
     LOGO_CHOICES = [
@@ -36,10 +43,17 @@ class Site(models.Model):
        ('youtube', 'YouTube'),
     ]
     STYLE_CHOICES = [
-    ('square', 'Square'),
-    ('dots', 'Dots'),
-    ('rounded', 'Rounded'),
-    ('smooth', 'Smooth'),
+        ('square', 'Square'),
+        ('dots', 'Dots'),
+        ('rounded', 'Rounded'),
+        ('smooth', 'Smooth'),
+    ]
+    FONT_CHOICES = [
+        ('arial', 'Arial'),
+        ('bold', 'Bold'),
+        ('script', 'Script'),
+        ('mono', 'Mono'),
+        ('fancy', 'Fancy'),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     session_key = models.CharField(max_length=255, null=True, blank=True)
@@ -51,6 +65,8 @@ class Site(models.Model):
     color = models.CharField(max_length=7, default="#000000")
     logo_image = models.ImageField(upload_to='logos/', null=True, blank=True)
     logo_type = models.CharField(max_length=20, choices=LOGO_CHOICES, blank=True, default='')
+    center_text = models.CharField(max_length=20, blank=True, null=True)
+    font_type = models.CharField(max_length=20, choices=FONT_CHOICES, default='arial')
 
     def __str__(self):
         return self.name
@@ -58,8 +74,8 @@ class Site(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
-        # data = f"http://127.0.0.1:8000/r/{self.id}/"
-        data = f"http://qrcode.pythonanywhere.com/r/{self.id}/"
+        data = f"http://127.0.0.1:8000/r/{self.id}/"
+        # data = f"http://qrcode.pythonanywhere.com/r/{self.id}/"
 
         qr = qrcode.QRCode(
             error_correction=qrcode.constants.ERROR_CORRECT_H,
@@ -121,10 +137,10 @@ class Site(models.Model):
         if self.logo_image:
             try:
                 logo = Image.open(self.logo_image)
-            except:
+            except Exception:
                 logo = None
 
-        elif self.logo_type and self.logo_type in LOGO_MAP:
+        elif self.logo_type in LOGO_MAP:
             logo_path = os.path.join(settings.MEDIA_ROOT, 'logos', LOGO_MAP[self.logo_type])
             if os.path.exists(logo_path):
                 logo = Image.open(logo_path)
@@ -139,7 +155,47 @@ class Site(models.Model):
             if logo.mode != 'RGBA':
                 logo = logo.convert("RGBA")
 
+            bg = Image.new("RGBA", logo.size, (255, 255, 255, 255))
+            bg.paste(logo, (0, 0), logo)
+            logo = bg
+
             qr_img.paste(logo, pos, mask=logo)
+
+        elif self.center_text:
+            draw_text = ImageDraw.Draw(qr_img)
+
+            text = self.center_text.upper()
+
+            from PIL import ImageFont
+
+            try:
+                font_file = FONT_MAP.get(self.font_type, "arial.ttf")
+                font_path = os.path.join(settings.MEDIA_ROOT, "fonts", font_file)
+                font = ImageFont.truetype(font_path, size=30)
+            except:
+                font = ImageFont.load_default()
+
+            text = self.center_text.upper()
+
+            qr_w, qr_h = qr_img.size
+            center = (qr_w // 2, qr_h // 2)
+
+            padding = 10
+
+            bbox = draw_text.textbbox(center, text, font=font, anchor="mm")
+
+            text_w = bbox[2] - bbox[0]
+            text_h = bbox[3] - bbox[1]
+
+            bg_box = [
+                center[0] - text_w//2 - padding,
+                center[1] - text_h//2 - padding,
+                center[0] + text_w//2 + padding,
+                center[1] + text_h//2 + padding,
+            ]
+
+            draw_text.rectangle(bg_box, fill="white")
+            draw_text.text(center, text, fill="black", font=font, anchor="mm")
 
         buffer = BytesIO()
         qr_img.save(buffer, format='PNG')

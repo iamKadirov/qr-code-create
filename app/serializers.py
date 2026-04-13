@@ -7,10 +7,11 @@ class SiteSerializer(serializers.ModelSerializer):
     url_site = serializers.CharField()
     color = serializers.CharField(required=False)
     logo_image = serializers.ImageField(required=False)
+    center_text = serializers.CharField(required=False)
 
     class Meta:
         model = Site
-        fields = ['id', 'name', 'image', 'url_site', 'logo_type', 'logo_image', 'color', 'style', 'scan_count']
+        fields = ['id', 'name', 'image', 'url_site', 'logo_type', 'logo_image', 'center_text', 'font_type', 'color', 'style', 'scan_count']
         read_only_fields = ['image', 'scan_count']
 
     def validate_url_site(self, value):
@@ -40,6 +41,11 @@ class SiteSerializer(serializers.ModelSerializer):
         if data.get("logo_image") and data.get("logo_type"):
             data["logo_type"] = ""
         return data
+    def validate_font_type(self, value):
+        valid_fonts = ['arial', 'bold', 'script', 'mono', 'fancy']
+        if value not in valid_fonts:
+            raise serializers.ValidationError("Invalid font type")
+        return value
         
 class ScanLogSerializer(serializers.ModelSerializer):
     class Meta:
