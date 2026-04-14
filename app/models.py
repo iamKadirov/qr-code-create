@@ -53,11 +53,17 @@ class Site(models.Model):
        ('instagram', 'Instagram'),
        ('youtube', 'YouTube'),
     ]
+    # STYLE_CHOICES = [
+    #     ('square', 'Square'),
+    #     ('dots', 'Dots'),
+    #     ('rounded', 'Rounded'),
+    #     ('smooth', 'Smooth'),
+    # ]
     STYLE_CHOICES = [
-        ('square', 'Square'),
-        ('dots', 'Dots'),
-        ('rounded', 'Rounded'),
-        ('smooth', 'Smooth'),
+        ("liquid", "Liquid"),
+        ("dots", "Dots"),
+        ("lines", "Lines"),
+        ("square", "Square"),
     ]
     FONT_CHOICES = [
         ('arial', 'Arial'),
@@ -129,39 +135,87 @@ class Site(models.Model):
 
         fill_color = self.color if self.color else "#000000"
 
+        import random
+
+        def is_finder(x, y, size):
+            return (
+                (x < 7 and y < 7) or
+                (x > size-8 and y < 7) or
+                (x < 7 and y > size-8)
+            )
+
+
         for y in range(size):
             for x in range(size):
-                if matrix[y][x]:
+                if not matrix[y][x]:
+                    continue
 
-                    x1 = x * box
-                    y1 = y * box
-                    x2 = x1 + box
-                    y2 = y1 + box
+                x1 = x * box
+                y1 = y * box
+                x2 = x1 + box
+                y2 = y1 + box
 
-                    if self.style == "smooth":
-                        neighbors = [
-                            matrix[y][x-1] if x > 0 else False,
-                            matrix[y][x+1] if x < size-1 else False,
-                            matrix[y-1][x] if y > 0 else False,
-                            matrix[y+1][x] if y < size-1 else False,
-                        ]
+                if is_finder(x, y, size):
+                    draw.rectangle([x1, y1, x2, y2], fill=fill_color)
+                    continue
 
-                        radius = 6 if any(neighbors) else box//2
+                style = self.style or "liquid"
 
-                        draw.rounded_rectangle(
-                            [x1, y1, x2, y2],
-                            radius=radius,
-                            fill=fill_color
-                        )
+                if style == "liquid":
 
-                    elif self.style == "dots":
-                        draw.ellipse([x1, y1, x2, y2], fill=fill_color)
+                    neighbors = sum([
+                        matrix[y][x-1] if x > 0 else 0,
+                        matrix[y][x+1] if x < size-1 else 0,
+                        matrix[y-1][x] if y > 0 else 0,
+                        matrix[y+1][x] if y < size-1 else 0,
+                    ])
 
-                    elif self.style == "rounded":
-                        draw.rounded_rectangle([x1, y1, x2, y2], radius=3, fill=fill_color)
-
+                    if neighbors >= 3:
+                        radius = random.randint(6, 10)
+                    elif neighbors == 2:
+                        radius = random.randint(4, 8)
                     else:
-                        draw.rectangle([x1, y1, x2, y2], fill=fill_color)
+                        radius = box // 2
+
+                    offset = random.randint(-2, 2)
+
+                    draw.rounded_rectangle(
+                        [
+                            x1 + offset,
+                            y1 + offset,
+                            x2 + offset,
+                            y2 + offset
+                        ],
+                        radius=radius,
+                        fill=fill_color
+                    )
+
+                elif style == "dots":
+
+                    radius = random.randint(2, box // 2)
+
+                    cx = x1 + box // 2
+                    cy = y1 + box // 2
+
+                    draw.ellipse(
+                        [
+                            cx - radius,
+                            cy - radius,
+                            cx + radius,
+                            cy + radius
+                        ],
+                        fill=fill_color
+                    )
+
+                elif style == "lines":
+
+                    if random.random() > 0.5:
+                        draw.line([x1, y1, x2, y2], fill=fill_color, width=3)
+                    else:
+                        draw.line([x2, y1, x1, y2], fill=fill_color, width=3)
+
+                else:
+                    draw.rectangle([x1, y1, x2, y2], fill=fill_color)
 
         qr_img = img
 
