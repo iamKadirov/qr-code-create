@@ -6,6 +6,7 @@ from django.core.validators import URLValidator
 class SiteSerializer(serializers.ModelSerializer):
     url_site = serializers.CharField()
     color = serializers.CharField(required=False)
+    background_color = serializers.CharField(required=False)
     logo_image = serializers.ImageField(required=False)
     center_text = serializers.CharField(required=False)
 
@@ -21,6 +22,7 @@ class SiteSerializer(serializers.ModelSerializer):
             'center_text', 
             'font_type', 
             'color', 
+            'background_color',
             'style', 
             'scan_count', 
             'created_at', 
@@ -45,6 +47,11 @@ class SiteSerializer(serializers.ModelSerializer):
         if value:
             if not value.startswith("#") or len(value) != 7:
                 raise serializers.ValidationError("Color must be HEX like #ffffff")
+        return value
+    def validate_background_color(self, value):
+        if value:
+            if not value.startswith("#") or len(value) != 7:
+                raise serializers.ValidationError("Background color must be HEX like #ffffff")
         return value
     def validate_logo_image(self, value):
         if value:

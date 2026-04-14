@@ -84,6 +84,7 @@ class Site(models.Model):
     style = models.CharField(max_length=20, choices=STYLE_CHOICES, default='square')
     scan_count = models.IntegerField(default=0)
     color = models.CharField(max_length=7, default="#000000")
+    background_color = models.CharField(max_length=7, default="#ffffff")
     logo_image = models.ImageField(upload_to='logos/', null=True, blank=True)
     logo_type = models.CharField(max_length=20, choices=LOGO_CHOICES, blank=True, default='')
     center_text = models.CharField(max_length=20, blank=True, null=True)
@@ -124,7 +125,8 @@ class Site(models.Model):
         box = 10
         img_size = size * box
 
-        img = Image.new("RGB", (img_size, img_size), "white")
+        bg_color = self.background_color if self.background_color else "#ffffff"
+        img = Image.new("RGB", (img_size, img_size), bg_color)
         draw = ImageDraw.Draw(img)
 
         fill_color = self.color if self.color else "#000000"
