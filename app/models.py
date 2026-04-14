@@ -128,12 +128,6 @@ class Site(models.Model):
         draw = ImageDraw.Draw(img)
 
         fill_color = self.color if self.color else "#000000"
-        def is_finder(x, y, size):
-            return (
-                (x < 7 and y < 7) or            
-                (x > size - 8 and y < 7) or        
-                (x < 7 and y > size - 8)            
-            )
 
         for y in range(size):
             for x in range(size):
@@ -143,10 +137,6 @@ class Site(models.Model):
                     y1 = y * box
                     x2 = x1 + box
                     y2 = y1 + box
-
-                    if is_finder(x, y, size):
-                        draw.rectangle([x1, y1, x2, y2], fill=fill_color)
-                        continue
 
                     if self.style == "smooth":
                         neighbors = [
